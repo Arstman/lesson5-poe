@@ -15,7 +15,7 @@ Name:  Aaron 彭亚伦
 The source code of PoE pallet located in fold `pallets/poe`
 
 ## Codes of PoE pallet
-To see the code of PoE pallet, go to [pallet/poe/src/lib.rs](pallet/poe/src/lib.rs) file
+To see the code of PoE pallet, go to [pallet/poe/src/lib.rs](pallets/poe/src/lib.rs) file
 
 ## Features & Screenshots
 

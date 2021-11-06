@@ -44,6 +44,7 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
+        //simplely same code as in KaiChao's video
         #[pallet::weight(0)]
         pub fn create_claim(origin: OriginFor<T>, claim: Vec<u8>) -> DispatchResultWithPostInfo {
             let sender = ensure_signed(origin)?;
@@ -60,6 +61,7 @@ pub mod pallet {
             Ok(().into())
         }
 
+        //simplely same code as in KaiChao's video
         #[pallet::weight(0)]
         pub fn revoke_claim(origin: OriginFor<T>, claim: Vec<u8>) -> DispatchResultWithPostInfo {
             let sender = ensure_signed(origin)?;
@@ -73,20 +75,30 @@ pub mod pallet {
             Ok(().into())
         }
 
+        // transfer a claim to another acount
+        // in the 1st version i simplely remove old claim and then insert a new one, 
+        // this version use try_mutate method, seems much better and safe, since remove & insert takes 2 step and might fails(??) 
         #[pallet::weight(0)]
-        pub fn transfer_claim(origin: OriginFor<T>, to:T::AccountId, claim: Vec<u8>) -> DispatchResultWithPostInfo {
+        pub fn transfer_claim(
+            origin: OriginFor<T>,
+            to: T::AccountId,
+            claim: Vec<u8>,
+        ) -> DispatchResultWithPostInfo {
             let sender = ensure_signed(origin)?;
-            let (owner, _) = Proofs::<T>::get(&claim).ok_or(Error::<T>::ClaimNotExist)?;
-
-            ensure!(owner == sender, Error::<T>::NotClaimOwner);
-            Proofs::<T>::remove(&claim);
-            Proofs::<T>::insert(
-                &claim,
-                (to.clone(), frame_system::Pallet::<T>::block_number()),
-            );
-
+            //get old value and try to mutate it.
+            Proofs::<T>::try_mutate(&claim, |old| -> DispatchResultWithPostInfo {
+                match old {
+                    Some((owner, _)) => {
+                        ensure!(*owner == sender, Error::<T>::NotClaimOwner);
+                        // use std::option::Option.replace() method to replace old value with new
+                        // AccountId and new block_number
+                        old.replace((to.clone(), frame_system::Pallet::<T>::block_number()));
+                        Ok(().into())
+                    }
+                    None => Err(Error::<T>::ClaimNotExist.into()),
+                }
+            })?;
             Self::deposit_event(Event::ClaimTransfered(sender, to, claim));
-
             Ok(().into())
         }
     }

@@ -20,7 +20,7 @@ The source code of PoE pallet located in fold `pallets/poe`
 
 ### Node running
 
-![Node running](assets/runing.png)
+![Node running](assets/run-node.png)
 
 ### Features:
 
